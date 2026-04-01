@@ -1,0 +1,30 @@
+services:
+  db:
+    image: mariadb:11.4
+    container_name: todo-app-db
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: todoapp
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h localhost -u root -ppassword --silent"]
+      interval: 10s
+      retries: 20
+      start_period: 30s
+
+  app:
+    build: .
+    container_name: todo-app-app
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+
+volumes:
+  db_data:
